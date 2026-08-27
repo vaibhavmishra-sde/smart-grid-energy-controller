@@ -39,7 +39,9 @@ CREATE TABLE IF NOT EXISTS breakers (
 
 CREATE TABLE IF NOT EXISTS telemetry_aggregates (
   id BIGSERIAL PRIMARY KEY,
-  sensor_id VARCHAR(64) NOT NULL REFERENCES sensors(id),
+  -- Telemetry ingestion is intentionally decoupled from device registration so
+  -- high-rate writes never block on per-message foreign-key inserts.
+  sensor_id VARCHAR(64) NOT NULL,
   bucket_start TIMESTAMPTZ NOT NULL,
   average_voltage NUMERIC(8, 2),
   average_current NUMERIC(8, 2),
@@ -75,4 +77,3 @@ CREATE TABLE IF NOT EXISTS audit_logs (
   details JSONB NOT NULL DEFAULT '{}'::jsonb,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
-

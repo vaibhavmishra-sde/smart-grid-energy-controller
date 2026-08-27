@@ -54,6 +54,7 @@ services:
       DATABASE_URL: postgresql://smart_grid:change_me_local_only@postgres:5432/smart_grid
       SIMULATED_SENSORS: 1000
       TELEMETRY_INTERVAL_MS: 1000
+      AGGREGATION_FLUSH_MS: 5000
       ENABLE_AUTO_PROTECTION: "true"
       MAX_VOLTAGE: 250
       MIN_VOLTAGE: 210
@@ -76,6 +77,7 @@ services:
       MQTT_PORT: 1883
       SIMULATED_SENSORS: 1000
       TELEMETRY_INTERVAL_MS: 1000
+      AGGREGATION_FLUSH_MS: 5000
     depends_on:
       mosquitto:
         condition: service_healthy
@@ -91,4 +93,3 @@ volumes:
   mosquitto_data:
   redis_data:
   postgres_data:
-
