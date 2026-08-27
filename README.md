@@ -2,9 +2,6 @@
 
 A software-only industrial IoT platform that simulates energy sensors and virtual breakers. No physical hardware or cloud account is required.
 
-## Day 1 status
-
-The local foundation provides Docker Compose services for Mosquitto, Redis, PostgreSQL, the Node.js API, a simulator placeholder, and a React/Vite operations-center shell.
 
 ## Run locally
 
