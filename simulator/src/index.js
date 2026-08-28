@@ -6,6 +6,7 @@ const mqttPort = Number(process.env.MQTT_PORT ?? 1883);
 const intervalMs = Math.max(100, Number(process.env.TELEMETRY_INTERVAL_MS ?? 1000));
 const commandTopic = 'grid/system/simulation/command';
 const eventTopic = 'grid/system/events';
+const breakerCommandTopic = 'grid/+/+/+/breaker/+/command';
 const maxSensors = 10_000;
 
 let sensorCount = Math.min(maxSensors, Math.max(1, Number(process.env.SIMULATED_SENSORS ?? 1000)));
@@ -14,6 +15,7 @@ let running = true;
 let sequence = 0;
 let timer;
 let sensors = [];
+const breakers = new Map();
 
 function buildSensors(count) {
   sensors = Array.from({ length: count }, (_, index) => {
@@ -33,6 +35,11 @@ function buildSensors(count) {
       sequence: 0,
     };
   });
+  for (let index = 1; index <= 12; index += 1) {
+    const gridId = `GRID-${String(index).padStart(2, '0')}`;
+    const breakerId = `BREAKER-${gridId}`;
+    if (!breakers.has(breakerId)) breakers.set(breakerId, { breakerId, regionId: 'REGION-01', substationId: 'SUB-01', gridId, status: 'ON' });
+  }
 }
 
 function bounded(value, minimum, maximum) {
@@ -102,14 +109,47 @@ function applyCommand(client, rawPayload) {
   console.log(`Simulation command=${action || 'unknown'} running=${running} scenario=${scenario} sensors=${sensorCount}`);
 }
 
+function publishBreakerStatus(client, breaker, result = 'SUCCESS', message = null) {
+  const topic = `grid/${breaker.regionId}/${breaker.substationId}/${breaker.gridId}/breaker/${breaker.breakerId}/status`;
+  client.publish(topic, JSON.stringify({ ...breaker, result, message, timestamp: new Date().toISOString() }), { qos: 0 });
+}
+
+function applyBreakerCommand(client, topic, rawPayload) {
+  let command;
+  try { command = JSON.parse(rawPayload.toString('utf8')); } catch { return; }
+  const parts = topic.split('/');
+  if (parts.length !== 7 || parts[4] !== 'breaker') return;
+  const [_, regionId, substationId, gridId, , breakerId] = parts;
+  const breaker = breakers.get(breakerId) ?? { breakerId, regionId, substationId, gridId, status: 'ON' };
+  Object.assign(breaker, { regionId, substationId, gridId });
+  breakers.set(breakerId, breaker);
+  const action = String(command.action ?? '').toUpperCase();
+  const valid = action === 'ON' && breaker.status === 'OFF'
+    || action === 'OFF' && breaker.status === 'ON'
+    || action === 'TRIP' && ['ON', 'OFF'].includes(breaker.status)
+    || action === 'RESET' && ['TRIPPED', 'FAULT'].includes(breaker.status);
+  if (!valid) {
+    publishBreakerStatus(client, breaker, 'ERROR', `Cannot ${action} breaker from ${breaker.status}`);
+    return;
+  }
+  breaker.status = action === 'TRIP' ? 'TRIPPED' : action === 'RESET' ? 'ON' : action;
+  breaker.lastCommand = action;
+  breaker.lastChanged = new Date().toISOString();
+  publishBreakerStatus(client, breaker);
+}
+
 const client = mqtt.connect(`mqtt://${mqttHost}:${mqttPort}`, { reconnectPeriod: 2000, keepalive: 30 });
 client.on('connect', () => {
   console.log(`Simulator connected to MQTT at ${mqttHost}:${mqttPort}`);
   client.subscribe(commandTopic, { qos: 0 });
+  client.subscribe(breakerCommandTopic, { qos: 0 });
   publishEvent(client, 'simulator_connected', { sensorCount, scenario });
   if (!timer) timer = setInterval(() => publishBatch(client), intervalMs);
 });
-client.on('message', (topic, payload) => { if (topic === commandTopic) applyCommand(client, payload); });
+client.on('message', (topic, payload) => {
+  if (topic === commandTopic) applyCommand(client, payload);
+  else if (topic.endsWith('/command') && topic.includes('/breaker/')) applyBreakerCommand(client, topic, payload);
+});
 client.on('reconnect', () => console.log('Simulator reconnecting to MQTT...'));
 client.on('error', (error) => console.error('Simulator MQTT error:', error.message));
 
@@ -124,4 +164,3 @@ function shutdown(signal) {
 }
 process.on('SIGINT', () => shutdown('SIGINT'));
 process.on('SIGTERM', () => shutdown('SIGTERM'));
-

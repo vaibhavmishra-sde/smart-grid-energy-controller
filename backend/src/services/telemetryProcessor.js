@@ -1,5 +1,7 @@
 import { config } from '../config.js';
 import { database, mqttClient, redis } from './dependencies.js';
+import { autoTripForGrid } from './breakers.js';
+import { broadcast } from './realtime.js';
 
 const TELEMETRY_TOPIC = 'grid/+/+/+/sensor/+/telemetry';
 const SENSOR_TTL_SECONDS = 120;
@@ -22,8 +24,11 @@ const latestBySensor = new Map();
 const lastTimestampBySensor = new Map();
 const gridPower = new Map();
 const aggregateBuckets = new Map();
+const activeAlerts = new Map();
 const latencyWindow = [];
 let flushInProgress = false;
+let offlineTimer;
+let lastRealtimeBroadcastAt = 0;
 
 function percentile(values, percentileValue) {
   if (!values.length) return 0;
@@ -85,6 +90,69 @@ function aggregate(sensor) {
   aggregateBuckets.set(key, current);
 }
 
+function alertKey(type, sensorId) { return `${type}:${sensorId}`; }
+
+function createAlert(type, severity, sensor, message) {
+  const key = alertKey(type, sensor.sensorId);
+  if (activeAlerts.has(key)) return activeAlerts.get(key);
+  const alert = {
+    id: `ALERT-${Date.now()}-${activeAlerts.size}`,
+    type,
+    severity,
+    gridId: sensor.gridId,
+    sensorId: sensor.sensorId,
+    message,
+    status: 'ACTIVE',
+    timestamp: new Date().toISOString(),
+  };
+  activeAlerts.set(key, alert);
+  if (redis.isReady) redis.hSet('alerts:active', key, JSON.stringify(alert)).catch(() => {});
+  database.query(
+    'INSERT INTO alerts (severity, type, grid_id, sensor_id, message, status) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id',
+    [severity, type, sensor.gridId, sensor.sensorId, message, 'ACTIVE'],
+  ).then((result) => { alert.databaseId = result.rows[0]?.id; }).catch((error) => { telemetry.lastError = `Alert persistence: ${error.message}`; });
+  broadcast('alert_created', alert);
+  return alert;
+}
+
+function resolveAlert(type, sensorId) {
+  const key = alertKey(type, sensorId);
+  const alert = activeAlerts.get(key);
+  if (!alert) return;
+  alert.status = 'RESOLVED';
+  alert.resolvedAt = new Date().toISOString();
+  activeAlerts.delete(key);
+  if (redis.isReady) redis.hDel('alerts:active', key).catch(() => {});
+  if (alert.databaseId) database.query('UPDATE alerts SET status = $1, resolved_at = NOW() WHERE id = $2', ['RESOLVED', alert.databaseId]).catch(() => {});
+  broadcast('alert_resolved', alert);
+}
+
+function evaluateSafety(sensor) {
+  if (sensor.power > config.maxPower) {
+    createAlert('OVERLOAD', sensor.power > config.maxPower * 1.2 ? 'CRITICAL' : 'WARNING', sensor, `Power ${sensor.power.toFixed(1)}W exceeds configured limit of ${config.maxPower}W`);
+    if (sensor.power > config.maxPower * 1.2) autoTripForGrid(sensor.gridId, sensor.sensorId, sensor.power);
+  } else resolveAlert('OVERLOAD', sensor.sensorId);
+  if (sensor.voltage > config.maxVoltage) createAlert('HIGH_VOLTAGE', 'WARNING', sensor, `Voltage ${sensor.voltage}V exceeds ${config.maxVoltage}V`);
+  else resolveAlert('HIGH_VOLTAGE', sensor.sensorId);
+  if (sensor.voltage < config.minVoltage) createAlert('LOW_VOLTAGE', 'WARNING', sensor, `Voltage ${sensor.voltage}V is below ${config.minVoltage}V`);
+  else resolveAlert('LOW_VOLTAGE', sensor.sensorId);
+  if (sensor.frequency < 49.5 || sensor.frequency > 50.5) createAlert('FREQUENCY_INSTABILITY', 'CRITICAL', sensor, `Frequency ${sensor.frequency}Hz is outside 49.5–50.5Hz`);
+  else resolveAlert('FREQUENCY_INSTABILITY', sensor.sensorId);
+}
+
+function checkOfflineSensors() {
+  const now = Date.now();
+  for (const sensor of latestBySensor.values()) {
+    if (now - Date.parse(sensor.timestamp) > config.heartbeatTimeoutMs) {
+      if (sensor.status !== 'OFFLINE') {
+        sensor.status = 'OFFLINE';
+        broadcast('sensor_status', sensor);
+        createAlert('SENSOR_OFFLINE', 'WARNING', sensor, `No telemetry received for more than ${config.heartbeatTimeoutMs}ms`);
+      }
+    }
+  }
+}
+
 function handleMessage(topic, payload) {
   telemetry.received += 1;
   const started = performance.now();
@@ -121,7 +189,13 @@ function handleMessage(topic, payload) {
   gridPower.set(sensor.gridId, (gridPower.get(sensor.gridId) ?? 0) - (previous?.power ?? 0) + sensor.power);
   aggregate(sensor);
   setRedisState(sensor);
+  evaluateSafety(sensor);
   telemetry.processed += 1;
+  if (Date.now() - lastRealtimeBroadcastAt >= 100) {
+    lastRealtimeBroadcastAt = Date.now();
+    broadcast('telemetry_update', sensor);
+    broadcast('grid_update', { gridId: sensor.gridId, totalPower: gridPower.get(sensor.gridId) ?? sensor.power });
+  }
   const latency = Math.max(0, performance.now() - started);
   latencyWindow.push(latency);
   if (latencyWindow.length > 10_000) latencyWindow.splice(0, latencyWindow.length - 10_000);
@@ -179,6 +253,7 @@ function publishMetrics() {
     p99: percentile(latencyWindow, 99),
   };
   if (redis.isReady) redis.set('system:telemetry:metrics', JSON.stringify(getMetrics())).catch(() => {});
+  broadcast('system_metrics', getMetrics());
 }
 
 export function getMetrics() {
@@ -196,8 +271,25 @@ export function getLatestSensor(sensorId) {
   return latestBySensor.get(sensorId) ?? null;
 }
 
+export function getSensors() { return [...latestBySensor.values()]; }
+
 export function getGridSnapshot(gridId) {
   return { gridId, totalPower: gridPower.get(gridId) ?? 0, sensors: [...latestBySensor.values()].filter((sensor) => sensor.gridId === gridId) };
+}
+
+export function getAlerts() { return [...activeAlerts.values()]; }
+
+export function updateAlert(alertId, action) {
+  const alert = [...activeAlerts.values()].find((item) => item.id === alertId);
+  if (!alert) return null;
+  if (action === 'acknowledge') alert.status = 'ACKNOWLEDGED';
+  if (action === 'resolve') {
+    resolveAlert(alert.type, alert.sensorId);
+    return alert;
+  }
+  alert.acknowledgedAt = new Date().toISOString();
+  broadcast('alert_created', alert);
+  return alert;
 }
 
 export function sendSimulationCommand(command) {
@@ -216,9 +308,11 @@ export function startTelemetryProcessor() {
   });
   const metricsTimer = setInterval(publishMetrics, 1000);
   const flushTimer = setInterval(flushAggregates, config.aggregationFlushMs);
+  offlineTimer = setInterval(checkOfflineSensors, Math.max(1000, Math.floor(config.heartbeatTimeoutMs / 3)));
   return () => {
     clearInterval(metricsTimer);
     clearInterval(flushTimer);
+    clearInterval(offlineTimer);
     mqttClient.off('connect', subscribe);
     mqttClient.removeListener('message', handleMessage);
   };

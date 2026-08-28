@@ -38,4 +38,14 @@ The simulator supports runtime commands on `grid/system/simulation/command`:
 {"action":"scenario","scenario":"high_demand"}
 ```
 
-No commit or GitHub push is made for Day 2 until requested.
+## Day 3 operations and control
+
+Day 3 adds software-only virtual breakers, safety alerts, automatic protection, JWT role checks, audit logging, and live WebSocket events. Breaker commands use the MQTT round trip:
+
+```text
+REST command → MQTT command → virtual breaker → MQTT status → Redis/database → WebSocket
+```
+
+Demo users are configured through `ADMIN_PASSWORD`, `OPERATOR_PASSWORD`, and `VIEWER_PASSWORD`. Obtain a token with `POST /api/auth/login`, then send it as `Authorization: Bearer <token>` for breaker, alert, simulation, and audit operations.
+
+WebSocket clients connect to `ws://localhost:5000/ws` and receive `telemetry_update`, `grid_update`, `breaker_status`, `alert_created`, `alert_resolved`, `sensor_status`, `system_metrics`, and `audit_event` messages.

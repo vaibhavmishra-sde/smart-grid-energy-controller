@@ -60,6 +60,10 @@ services:
       MIN_VOLTAGE: 210
       MAX_POWER: 5000
       JWT_SECRET: change_me_before_production
+      ADMIN_PASSWORD: admin_change_me
+      OPERATOR_PASSWORD: operator_change_me
+      VIEWER_PASSWORD: viewer_change_me
+      HEARTBEAT_TIMEOUT_MS: 15000
     ports:
       - "5000:5000"
     depends_on:

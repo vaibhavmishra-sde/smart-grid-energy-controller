@@ -19,4 +19,10 @@ export const config = Object.freeze({
   maxVoltage: Number(process.env.MAX_VOLTAGE ?? 250),
   minVoltage: Number(process.env.MIN_VOLTAGE ?? 210),
   maxPower: Number(process.env.MAX_POWER ?? 5000),
+  enableAutoProtection: String(process.env.ENABLE_AUTO_PROTECTION ?? 'true').toLowerCase() === 'true',
+  heartbeatTimeoutMs: Number(process.env.HEARTBEAT_TIMEOUT_MS ?? 15_000),
+  jwtSecret: required('JWT_SECRET', 'change_me_before_production'),
+  adminPassword: process.env.ADMIN_PASSWORD ?? 'admin_change_me',
+  operatorPassword: process.env.OPERATOR_PASSWORD ?? 'operator_change_me',
+  viewerPassword: process.env.VIEWER_PASSWORD ?? 'viewer_change_me',
 });

@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS sensors (
 
 CREATE TABLE IF NOT EXISTS breakers (
   id VARCHAR(64) PRIMARY KEY,
-  grid_id VARCHAR(64) NOT NULL REFERENCES grids(id),
+  grid_id VARCHAR(64) NOT NULL,
   status VARCHAR(32) NOT NULL DEFAULT 'ON',
   last_command VARCHAR(32),
   last_changed TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -59,8 +59,8 @@ CREATE TABLE IF NOT EXISTS alerts (
   id BIGSERIAL PRIMARY KEY,
   severity VARCHAR(16) NOT NULL,
   type VARCHAR(64) NOT NULL,
-  grid_id VARCHAR(64) REFERENCES grids(id),
-  sensor_id VARCHAR(64) REFERENCES sensors(id),
+  grid_id VARCHAR(64),
+  sensor_id VARCHAR(64),
   message TEXT NOT NULL,
   status VARCHAR(32) NOT NULL DEFAULT 'ACTIVE',
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),

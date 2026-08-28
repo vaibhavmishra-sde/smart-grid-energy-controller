@@ -2,6 +2,8 @@
 
 **Schedule:** implement and verify this work today, then commit and push the completed Day 3 milestone.
 
+**Implementation status:** the virtual breaker MQTT round trip, role-aware command APIs, alert evaluation, automatic protection, audit logging, and WebSocket broadcasting are implemented. Full runtime verification requires the Docker services to be available.
+
 ## Goal
 
 Complete the operational control loop for software-only breakers and grid safety. Commands must travel from the API through MQTT to the virtual breaker, return as a status event, update Redis, and become visible through WebSockets.
