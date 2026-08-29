@@ -13,7 +13,7 @@ docker compose up --build
 - API health: `http://localhost:5000/health`
 - System status: `http://localhost:5000/api/system/status`
 
-## Day 2 telemetry pipeline
+
 
 The simulator runs as one event-driven Node.js process and publishes realistic readings at:
 
@@ -38,9 +38,8 @@ The simulator supports runtime commands on `grid/system/simulation/command`:
 {"action":"scenario","scenario":"high_demand"}
 ```
 
-## Day 3 operations and control
 
-Day 3 adds software-only virtual breakers, safety alerts, automatic protection, JWT role checks, audit logging, and live WebSocket events. Breaker commands use the MQTT round trip:
+it adds software-only virtual breakers, safety alerts, automatic protection, JWT role checks, audit logging, and live WebSocket events. Breaker commands use the MQTT round trip:
 
 ```text
 REST command → MQTT command → virtual breaker → MQTT status → Redis/database → WebSocket
