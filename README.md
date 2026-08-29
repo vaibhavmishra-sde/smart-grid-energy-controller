@@ -49,7 +49,6 @@ Demo users are configured through `ADMIN_PASSWORD`, `OPERATOR_PASSWORD`, and `VI
 
 WebSocket clients connect to `ws://localhost:5000/ws` and receive `telemetry_update`, `grid_update`, `breaker_status`, `alert_created`, `alert_resolved`, `sensor_status`, `system_metrics`, and `audit_event` messages.
 
-## Day 4 operations center
 
 The React/Vite frontend now provides an industrial operations center with live overview metrics, telemetry sparklines, sensor readings, topology, alerts, authenticated breaker controls, and performance monitoring. It polls summary APIs for resilience and consumes WebSocket events for low-latency updates.
 
