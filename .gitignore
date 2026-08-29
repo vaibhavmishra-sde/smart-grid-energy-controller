@@ -4,3 +4,21 @@ dist/
 coverage/
 *.log
 
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+venv/
+env/
+.venv/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+htmlcov/
+
+# OS
+.DS_Store
+Thumbs.db
+
