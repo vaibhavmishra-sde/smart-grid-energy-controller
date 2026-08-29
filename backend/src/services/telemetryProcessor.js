@@ -2,6 +2,7 @@ import { config } from '../config.js';
 import { database, mqttClient, redis } from './dependencies.js';
 import { autoTripForGrid } from './breakers.js';
 import { broadcast } from './realtime.js';
+import { validTelemetry } from './telemetryValidation.js';
 
 const TELEMETRY_TOPIC = 'grid/+/+/+/sensor/+/telemetry';
 const SENSOR_TTL_SECONDS = 120;
@@ -34,23 +35,6 @@ function percentile(values, percentileValue) {
   if (!values.length) return 0;
   const sorted = [...values].sort((a, b) => a - b);
   return sorted[Math.min(sorted.length - 1, Math.ceil((percentileValue / 100) * sorted.length) - 1)];
-}
-
-function validTelemetry(value) {
-  return value && typeof value === 'object'
-    && typeof value.sensorId === 'string'
-    && typeof value.gridId === 'string'
-    && typeof value.substationId === 'string'
-    && typeof value.regionId === 'string'
-    && Number.isFinite(value.voltage)
-    && Number.isFinite(value.current)
-    && Number.isFinite(value.power)
-    && Number.isFinite(value.frequency)
-    && Number.isFinite(value.powerFactor)
-    && Number.isFinite(value.energyConsumed)
-    && Number.isFinite(value.temperature)
-    && typeof value.timestamp === 'string'
-    && Number.isFinite(Date.parse(value.timestamp));
 }
 
 function setRedisState(sensor) {
@@ -259,6 +243,7 @@ function publishMetrics() {
 export function getMetrics() {
   return {
     ...telemetry,
+    totalPower: [...gridPower.values()].reduce((sum, power) => sum + power, 0),
     activeSensors: latestBySensor.size,
     onlineSensors: [...latestBySensor.values()].filter((sensor) => Date.now() - Date.parse(sensor.timestamp) < SENSOR_TTL_SECONDS * 1000).length,
     offlineSensors: [...latestBySensor.values()].filter((sensor) => Date.now() - Date.parse(sensor.timestamp) >= SENSOR_TTL_SECONDS * 1000).length,

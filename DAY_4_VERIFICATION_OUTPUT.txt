@@ -1,0 +1,26 @@
+Day 4 verification record
+=========================
+
+Command:
+node --test backend/telemetryValidation.test.js
+
+Output:
+✔ accepts a complete telemetry payload (1.0468ms)
+✔ rejects malformed telemetry payloads (0.1954ms)
+✔ accepts only supported simulation commands (0.1584ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 132.9024
+
+Additional static checks:
+- Backend and simulator JavaScript syntax checks passed.
+- Frontend/backend/simulator package JSON validation passed.
+- No merge conflict markers found.
+
+Runtime note:
+Docker Desktop and a browser runtime were not available in the build environment, so live Docker throughput and a browser screenshot remain to be captured locally.
