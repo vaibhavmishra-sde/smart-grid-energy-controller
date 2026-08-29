@@ -45,10 +45,7 @@ function setRedisState(sensor) {
   });
   redis.sAdd('sensors:active', sensor.sensorId).catch(() => {});
   redis.set(`sensor:${sensor.sensorId}:heartbeat`, sensor.timestamp, { EX: SENSOR_TTL_SECONDS }).catch(() => {});
-  redis.set('system:telemetry:metrics', JSON.stringify(getMetrics())).catch(() => {});
-  for (const [gridId, power] of gridPower) {
-    redis.set(`grid:${gridId}:power`, power.toFixed(2), { EX: SENSOR_TTL_SECONDS }).catch(() => {});
-  }
+  redis.set(`grid:${sensor.gridId}:power`, (gridPower.get(sensor.gridId) ?? sensor.power).toFixed(2), { EX: SENSOR_TTL_SECONDS }).catch(() => {});
   telemetry.redisUpdates += 1;
 }
 

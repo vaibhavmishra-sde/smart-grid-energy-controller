@@ -24,3 +24,11 @@ Additional static checks:
 
 Runtime note:
 Docker Desktop and a browser runtime were not available in the build environment, so live Docker throughput and a browser screenshot remain to be captured locally.
+
+Runtime sample captured from Docker on 2026-08-29:
+{"received":25000,"processed":25000,"dropped":0,"duplicates":0,"redisUpdates":25000,"databaseWrites":5,"databaseRows":10000,"processingLatencyMs":{"average":0.023962382199999046,"p95":0.06229399999938323,"p99":0.20448899999973946},"messagesPerSecond":1000,"processedPerSecond":1000,"lastError":null,"totalPower":2947828.5700000003,"activeSensors":1000,"onlineSensors":1000,"offlineSensors":0,"pendingAggregates":0,"gridCount":12}
+
+Frontend production build:
+vite v6.4.3 building for production...
+✓ 26 modules transformed.
+✓ built in 742ms

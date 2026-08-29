@@ -54,3 +54,5 @@ WebSocket clients connect to `ws://localhost:5000/ws` and receive `telemetry_upd
 The React/Vite frontend now provides an industrial operations center with live overview metrics, telemetry sparklines, sensor readings, topology, alerts, authenticated breaker controls, and performance monitoring. It polls summary APIs for resilience and consumes WebSocket events for low-latency updates.
 
 Day 4 verification output is recorded in `DAY_4_VERIFICATION_OUTPUT.txt`. The automated validation tests pass locally; Docker throughput and a browser screenshot must be captured on a machine with Docker Desktop and a browser runtime.
+
+The telemetry writer limits Redis updates to the current sensor and grid per message; aggregate metrics are written once per second to prevent queue growth at high message rates.
