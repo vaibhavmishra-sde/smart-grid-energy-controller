@@ -264,13 +264,15 @@ export function getAlerts() { return [...activeAlerts.values()]; }
 export function updateAlert(alertId, action) {
   const alert = [...activeAlerts.values()].find((item) => item.id === alertId);
   if (!alert) return null;
-  if (action === 'acknowledge') alert.status = 'ACKNOWLEDGED';
+  if (action === 'acknowledge') {
+    alert.status = 'ACKNOWLEDGED';
+    alert.acknowledgedAt = new Date().toISOString();
+    broadcast('alert_created', alert);
+  }
   if (action === 'resolve') {
     resolveAlert(alert.type, alert.sensorId);
     return alert;
   }
-  alert.acknowledgedAt = new Date().toISOString();
-  broadcast('alert_created', alert);
   return alert;
 }
 

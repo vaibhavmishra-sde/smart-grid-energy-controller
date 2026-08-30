@@ -101,7 +101,7 @@ function applyCommand(client, rawPayload) {
   if (action === 'start') running = true;
   if (action === 'stop') running = false;
   if (action === 'scenario' && typeof command.scenario === 'string') scenario = command.scenario;
-  if (action === 'preset' || Number.isFinite(Number(command.sensors))) {
+  if (action === 'preset' && Number.isFinite(Number(command.sensors))) {
     sensorCount = Math.min(maxSensors, Math.max(1, Number(command.sensors)));
     buildSensors(sensorCount);
   }
