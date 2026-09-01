@@ -21,9 +21,9 @@ function MetricCard({ label, value, unit, tone = 'normal', detail }) {
 }
 
 function Login({ onLogin, onClose }) {
-  const [username, setUsername] = useState('operator'); const [password, setPassword] = useState(''); const [error, setError] = useState('');
-  async function submit(event) { event.preventDefault(); const result = await onLogin(username, password); if (!result) setError('Invalid credentials or API unavailable.'); }
-  return <div className="modal-backdrop"><form className="login-card" onSubmit={submit}><button type="button" className="modal-close" onClick={onClose}>x</button><span className="eyebrow">OPERATOR AUTHENTICATION</span><h2>Command access</h2><p>Sign in to operate virtual breakers and manage alerts.</p><label>Username<input value={username} onChange={(event) => setUsername(event.target.value)} /></label><label>Password<input type="password" value={password} onChange={(event) => setPassword(event.target.value)} /></label>{error && <div className="form-error">{error}</div>}<button className="primary-button" type="submit">AUTHENTICATE</button></form></div>;
+  const [username, setUsername] = useState('operator'); const [password, setPassword] = useState(''); const [error, setError] = useState(''); const [submitting, setSubmitting] = useState(false);
+  async function submit(event) { event.preventDefault(); setError(''); setSubmitting(true); try { const result = await onLogin(username, password); if (!result) setError('Invalid credentials or API unavailable.'); } finally { setSubmitting(false); } }
+  return <div className="modal-backdrop"><form className="login-card" onSubmit={submit}><button type="button" className="modal-close" onClick={onClose} aria-label="Close sign-in dialog">x</button><span className="eyebrow">OPERATOR AUTHENTICATION</span><h2>Command access</h2><p>Sign in to operate virtual breakers and manage alerts.</p><label>Username<input value={username} autoComplete="username" onChange={(event) => setUsername(event.target.value)} /></label><label>Password<input type="password" autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} /></label>{error && <div className="form-error" role="alert">{error}</div>}<button className="primary-button" type="submit" disabled={submitting}>{submitting ? 'AUTHENTICATING...' : 'AUTHENTICATE'}</button></form></div>;
 }
 
 function Overview({ metrics, powerHistory, sensors, alerts, systemStatus }) {
