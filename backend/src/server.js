@@ -100,8 +100,8 @@ app.get('/api/sensors/:id', (request, response) => {
 
 app.get('/api/sensors', (request, response) => {
   const requestedLimit = Number(request.query.limit ?? 100);
-  if (!Number.isInteger(requestedLimit) || requestedLimit < 1 || requestedLimit > 1000) {
-    return response.status(400).json({ error: 'limit must be an integer between 1 and 1000' });
+  if (!Number.isInteger(requestedLimit) || requestedLimit < 1 || requestedLimit > config.apiMaxSensorLimit) {
+    return response.status(400).json({ error: `limit must be an integer between 1 and ${config.apiMaxSensorLimit}` });
   }
   return response.json(getSensors().slice(0, requestedLimit));
 });

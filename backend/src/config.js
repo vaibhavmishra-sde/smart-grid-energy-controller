@@ -14,6 +14,7 @@ export const config = Object.freeze({
   redisPort: Number(process.env.REDIS_PORT ?? 6379),
   databaseUrl: required('DATABASE_URL', 'postgresql://smart_grid:change_me_local_only@localhost:5432/smart_grid'),
   simulatedSensors: Number(process.env.SIMULATED_SENSORS ?? 1000),
+  apiMaxSensorLimit: Number(process.env.API_MAX_SENSOR_LIMIT ?? 1000),
   telemetryIntervalMs: Number(process.env.TELEMETRY_INTERVAL_MS ?? 1000),
   aggregationFlushMs: Number(process.env.AGGREGATION_FLUSH_MS ?? 5000),
   maxVoltage: Number(process.env.MAX_VOLTAGE ?? 250),
