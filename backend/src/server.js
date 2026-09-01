@@ -13,6 +13,13 @@ const app = express();
 app.use(helmet());
 app.use(cors());
 app.use(express.json({ limit: '100kb' }));
+app.use((request, response, next) => {
+  const suppliedRequestId = request.headers['x-request-id'];
+  const requestId = typeof suppliedRequestId === 'string' ? suppliedRequestId.slice(0, 128) : crypto.randomUUID();
+  request.requestId = requestId;
+  response.setHeader('X-Request-Id', requestId);
+  next();
+});
 
 app.post('/api/auth/login', (request, response) => {
   const result = login(request.body?.username, request.body?.password);
@@ -44,6 +51,7 @@ app.get('/api/system/status', (_request, response) => {
 });
 
 app.get('/api/metrics', (_request, response) => {
+  response.set('Cache-Control', 'no-store');
   response.json(getMetrics());
 });
 
@@ -90,9 +98,18 @@ app.get('/api/sensors/:id', (request, response) => {
   return response.json(sensor);
 });
 
-app.get('/api/sensors', (_request, response) => response.json(getSensors()));
+app.get('/api/sensors', (request, response) => {
+  const requestedLimit = Number(request.query.limit ?? 100);
+  if (!Number.isInteger(requestedLimit) || requestedLimit < 1 || requestedLimit > 1000) {
+    return response.status(400).json({ error: 'limit must be an integer between 1 and 1000' });
+  }
+  return response.json(getSensors().slice(0, requestedLimit));
+});
 
-app.get('/api/grids/:id', (request, response) => response.json(getGridSnapshot(request.params.id)));
+app.get('/api/grids/:id', (request, response) => {
+  if (!/^GRID-(0[1-9]|1[0-2])$/.test(request.params.id)) return response.status(404).json({ error: 'Grid not found' });
+  return response.json(getGridSnapshot(request.params.id));
+});
 
 app.post('/api/simulation/start', authenticate, authorize('Admin'), (_request, response) => {
   try { sendSimulationCommand({ action: 'start' }); return response.status(202).json({ accepted: true }); }
@@ -111,10 +128,10 @@ app.post('/api/simulation/preset', authenticate, authorize('Admin'), (request, r
   catch (error) { return response.status(503).json({ error: error.message }); }
 });
 
-app.use((_request, response) => response.status(404).json({ error: 'Route not found' }));
+app.use((request, response) => response.status(404).json({ error: 'Route not found', requestId: request.requestId }));
 app.use((error, _request, response, _next) => {
   console.error('Unhandled request error:', error);
-  response.status(500).json({ error: 'Internal server error' });
+  response.status(500).json({ error: 'Internal server error', requestId: _request.requestId });
 });
 
 const server = createServer(app);
