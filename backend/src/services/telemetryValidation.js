@@ -1,9 +1,13 @@
+function nonEmptyString(value) {
+  return typeof value === 'string' && value.trim().length > 0;
+}
+
 export function validTelemetry(value) {
   return value && typeof value === 'object'
-    && typeof value.sensorId === 'string'
-    && typeof value.gridId === 'string'
-    && typeof value.substationId === 'string'
-    && typeof value.regionId === 'string'
+    && nonEmptyString(value.sensorId)
+    && nonEmptyString(value.gridId)
+    && nonEmptyString(value.substationId)
+    && nonEmptyString(value.regionId)
     && Number.isFinite(value.voltage)
     && Number.isFinite(value.current)
     && Number.isFinite(value.power)
@@ -19,4 +23,3 @@ export function validSimulationCommand(value) {
   return value && typeof value === 'object'
     && ['start', 'stop', 'preset', 'scenario'].includes(String(value.action ?? '').toLowerCase());
 }
-

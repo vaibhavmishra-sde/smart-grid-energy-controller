@@ -12,9 +12,9 @@ test('accepts a complete telemetry payload', () => assert.equal(validTelemetry(s
 test('rejects malformed telemetry payloads', () => {
   assert.equal(validTelemetry({ ...sample, power: 'not-a-number' }), false);
   assert.equal(validTelemetry({ ...sample, timestamp: 'never' }), false);
+  assert.equal(validTelemetry({ ...sample, sensorId: '   ' }), false);
 });
 test('accepts only supported simulation commands', () => {
   assert.equal(validSimulationCommand({ action: 'preset', sensors: 5000 }), true);
   assert.equal(validSimulationCommand({ action: 'delete-all' }), false);
 });
-
