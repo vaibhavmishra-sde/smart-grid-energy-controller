@@ -131,6 +131,9 @@ app.post('/api/simulation/preset', authenticate, authorize('Admin'), (request, r
 app.use((request, response) => response.status(404).json({ error: 'Route not found', requestId: request.requestId }));
 app.use((error, _request, response, _next) => {
   console.error('Unhandled request error:', error);
+  if (error instanceof SyntaxError && 'body' in error) {
+    return response.status(400).json({ error: 'Request body must contain valid JSON', requestId: _request.requestId });
+  }
   response.status(500).json({ error: 'Internal server error', requestId: _request.requestId });
 });
 
