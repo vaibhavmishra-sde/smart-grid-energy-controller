@@ -26,8 +26,11 @@ The backend validates and deduplicates each payload, updates the latest reading 
 Useful endpoints:
 
 - `GET /api/metrics` — live received/processed/dropped rates, latency percentiles, Redis updates, pending aggregates, and sensor counts
+- `GET /api/sensors?limit=100` — latest readings, bounded by `API_MAX_SENSOR_LIMIT` (default 1000)
 - `GET /api/sensors/:id` — latest validated reading for a sensor
 - `GET /api/grids/:id` — current total power and latest readings for a grid
+
+API responses include an `X-Request-Id` header to make client errors easier to trace in logs.
 
 The simulator supports runtime commands on `grid/system/simulation/command`:
 
