@@ -3,10 +3,29 @@ import { createRoot } from 'react-dom/client';
 import './styles.css';
 
 const API = import.meta.env.VITE_API_URL ?? `${window.location.protocol}//${window.location.hostname}:5000`;
-const tabs = ['Overview', 'Grid topology', 'Alerts', 'Command center', 'Performance'];
+const navigationItems = [
+  { label: 'Overview', icon: '+' },
+  { label: 'Grid topology', icon: '/' },
+  { label: 'Alerts', icon: '!' },
+  { label: 'Command center', icon: '>' },
+  { label: 'Performance', icon: '~' }
+];
 
 function formatNumber(value, digits = 0) {
   return Number(value ?? 0).toLocaleString(undefined, { maximumFractionDigits: digits });
+}
+
+function formatTime(value) {
+  if (!value) return 'Awaiting sample';
+  const time = new Date(value);
+  return Number.isNaN(time.getTime()) ? 'Awaiting sample' : time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+}
+
+function sensorTone(status) {
+  const normalized = String(status ?? '').toLowerCase();
+  if (normalized.includes('fault') || normalized.includes('offline')) return 'critical';
+  if (normalized.includes('warn')) return 'warning';
+  return 'normal';
 }
 
 function Sparkline({ values, color = '#7fffc0' }) {
@@ -59,7 +78,7 @@ function App() {
   async function command(breakerId, action) { const response = await fetch(`${API}/api/breakers/${breakerId}/${action.toLowerCase()}`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } }); if (!response.ok) { setShowLogin(true); return; } }
   async function acknowledge(alertId) { const response = await fetch(`${API}/api/alerts/${alertId}/acknowledge`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } }); if (!response.ok) setShowLogin(true); }
   const page = useMemo(() => ({ Overview: <Overview metrics={metrics} powerHistory={powerHistory} sensors={sensors} alerts={alerts} systemStatus={systemStatus} />, 'Grid topology': <Topology grids={grids} />, Alerts: <Alerts alerts={alerts} token={token} onLogin={() => setShowLogin(true)} onAcknowledge={acknowledge} />, 'Command center': <CommandCenter breakers={breakers} token={token} onLogin={() => setShowLogin(true)} onCommand={command} />, Performance: <Performance metrics={metrics} powerHistory={powerHistory} /> }[tab]), [tab, metrics, powerHistory, sensors, alerts, grids, breakers, token, systemStatus]);
-  return <div className="app-shell"><aside className="sidebar"><div className="brand"><span className="brand-mark">G</span><div><b>GRIDOPS</b><small>ENERGY CONTROL</small></div></div><div className="side-label">OPERATIONS</div><nav aria-label="Dashboard sections">{tabs.map((item) => <button key={item} className={tab === item ? 'active' : ''} aria-current={tab === item ? 'page' : undefined} onClick={() => setTab(item)}><span className="nav-icon">{['+','/','!','>','~'][tabs.indexOf(item)]}</span>{item}</button>)}</nav><div className="sidebar-footer"><span className={`dot ${connection === 'CONNECTED' ? 'green' : 'yellow'}`}></span><div><b>{connection}</b><small>Local control plane</small></div></div></aside><main className="main-content"><header className="topbar"><div><span className="eyebrow">SMART GRID / CONTROL ROOM</span><h1>{tab}</h1></div><div className="topbar-actions"><span className="clock">{now.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}</span>{token ? <button className="user-chip" onClick={() => { localStorage.removeItem('gridops_token'); setToken(''); }}>OPERATOR <span>LOG OUT</span></button> : <button className="primary-button small" onClick={() => setShowLogin(true)}>SIGN IN</button>}</div></header><div className="content">{page}</div></main>{showLogin && <Login onLogin={login} onClose={() => setShowLogin(false)} />}</div>;
+  return <div className="app-shell"><aside className="sidebar"><div className="brand"><span className="brand-mark">G</span><div><b>GRIDOPS</b><small>ENERGY CONTROL</small></div></div><div className="side-label">OPERATIONS</div><nav aria-label="Dashboard sections">{navigationItems.map((item) => <button key={item.label} className={tab === item.label ? 'active' : ''} aria-current={tab === item.label ? 'page' : undefined} onClick={() => setTab(item.label)}><span className="nav-icon" aria-hidden="true">{item.icon}</span>{item.label}</button>)}</nav><div className="sidebar-footer"><span className={`dot ${connection === 'CONNECTED' ? 'green' : 'yellow'}`}></span><div><b>{connection}</b><small>Local control plane</small></div></div></aside><main className="main-content"><header className="topbar"><div><span className="eyebrow">SMART GRID / CONTROL ROOM</span><h1>{tab}</h1></div><div className="topbar-actions"><span className="clock">{now.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}</span>{token ? <button className="user-chip" onClick={() => { localStorage.removeItem('gridops_token'); setToken(''); }}>OPERATOR <span>LOG OUT</span></button> : <button className="primary-button small" onClick={() => setShowLogin(true)}>SIGN IN</button>}</div></header><div className="content">{page}</div></main>{showLogin && <Login onLogin={login} onClose={() => setShowLogin(false)} />}</div>;
 }
 
 createRoot(document.getElementById('root')).render(<App />);
