@@ -16,5 +16,7 @@ test('rejects malformed telemetry payloads', () => {
 });
 test('accepts only supported simulation commands', () => {
   assert.equal(validSimulationCommand({ action: 'preset', sensors: 5000 }), true);
+  assert.equal(validSimulationCommand({ action: 'SCENARIO' }), true);
   assert.equal(validSimulationCommand({ action: 'delete-all' }), false);
+  assert.equal(validSimulationCommand({}), false);
 });
