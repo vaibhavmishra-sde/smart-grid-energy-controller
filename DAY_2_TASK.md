@@ -1,6 +1,6 @@
 # Day 2 — Virtual Telemetry Pipeline
 
-**Schedule:** build and test this work today. Do not commit or push it until you explicitly request the Day 2 upload.
+**Schedule:** build and test this work today.
 
 **Implementation status:** the simulator, MQTT processor, Redis state, aggregate batching, metrics APIs, and simulation control APIs are implemented. Runtime throughput verification remains pending because Docker is not available on the current machine.
 
