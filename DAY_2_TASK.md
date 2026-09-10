@@ -88,7 +88,6 @@ Connect the virtual sensor simulator to the backend through MQTT, maintain fast-
 - [ ] Confirm malformed MQTT payloads are counted as dropped and logged safely.
 
 ## Definition of done
-
 Telemetry genuinely travels through:
 
 ```text
