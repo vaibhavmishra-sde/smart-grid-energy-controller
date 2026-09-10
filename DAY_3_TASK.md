@@ -1,6 +1,6 @@
 # Day 3 — Grid Operations, Safety, and Real-Time Control
 
-**Schedule:** implement and verify this work today, then commit and push the completed Day 3 milestone.
+**Schedule:** implement and verify this work today.
 
 **Implementation status:** the virtual breaker MQTT round trip, role-aware command APIs, alert evaluation, automatic protection, audit logging, and WebSocket broadcasting are implemented. Full runtime verification requires the Docker services to be available.
 
