@@ -13,8 +13,6 @@ docker compose up --build
 - API health: `http://localhost:5000/health`
 - System status: `http://localhost:5000/api/system/status`
 
-
-
 The simulator runs as one event-driven Node.js process and publishes realistic readings at:
 
 ```text
