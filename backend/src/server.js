@@ -9,6 +9,7 @@ import { getBreaker, getBreakers, requestBreakerCommand, startBreakerService } f
 import { getAlerts, getGridSnapshot, getLatestSensor, getMetrics, getSensors, sendSimulationCommand, startTelemetryProcessor, updateAlert } from './services/telemetryProcessor.js';
 import { closeWebSocket, initWebSocket } from './services/realtime.js';
 
+
 const app = express();
 app.use(helmet());
 app.use(cors());
@@ -21,11 +22,13 @@ app.use((request, response, next) => {
   next();
 });
 
+
 app.post('/api/auth/login', (request, response) => {
   const result = login(request.body?.username, request.body?.password);
   if (!result) return response.status(401).json({ error: 'Invalid username or password' });
   return response.json(result);
 });
+
 
 app.get('/api/audit', authenticate, authorize('Admin', 'Operator'), async (_request, response) => {
   try {
@@ -36,9 +39,11 @@ app.get('/api/audit', authenticate, authorize('Admin', 'Operator'), async (_requ
   }
 });
 
+
 app.get('/health', (_request, response) => {
   response.status(200).json({ status: 'ok', service: 'smart-grid-api', timestamp: new Date().toISOString() });
 });
+
 
 app.get('/api/system/status', (_request, response) => {
   const dependencies = dependencyState;
@@ -50,10 +55,12 @@ app.get('/api/system/status', (_request, response) => {
   });
 });
 
+
 app.get('/api/metrics', (_request, response) => {
   response.set('Cache-Control', 'no-store');
   response.json(getMetrics());
 });
+
 
 app.get('/api/grids', (_request, response) => response.json(Array.from({ length: 12 }, (_, index) => {
   const gridId = `GRID-${String(index + 1).padStart(2, '0')}`;
