@@ -5,3 +5,5 @@ RUN npm install --omit=dev
 COPY src ./src
 CMD ["npm", "start"]
 
+
+ENV NODE_ENV=production
