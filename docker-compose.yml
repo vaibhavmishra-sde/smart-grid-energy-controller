@@ -1,6 +1,7 @@
 services:
   mosquitto:
     image: eclipse-mosquitto:2.0
+    restart: unless-stopped
     ports:
       - "1883:1883"
       - "9001:9001"
@@ -15,6 +16,7 @@ services:
 
   redis:
     image: redis:7-alpine
+    restart: unless-stopped
     ports:
       - "6379:6379"
     command: redis-server --appendonly yes
@@ -32,6 +34,7 @@ services:
       POSTGRES_DB: smart_grid
       POSTGRES_USER: smart_grid
       POSTGRES_PASSWORD: change_me_local_only
+    restart: unless-stopped
     ports:
       - "5432:5432"
     volumes:
@@ -64,6 +67,7 @@ services:
       OPERATOR_PASSWORD: operator_change_me
       VIEWER_PASSWORD: viewer_change_me
       HEARTBEAT_TIMEOUT_MS: 15000
+    restart: unless-stopped
     ports:
       - "5000:5000"
     depends_on:
@@ -88,6 +92,7 @@ services:
 
   frontend:
     build: ./frontend
+    restart: unless-stopped
     ports:
       - "5173:5173"
     depends_on:
