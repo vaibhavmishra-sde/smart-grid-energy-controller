@@ -23,3 +23,5 @@
 
 The screenshot and throughput results are intentionally not invented when the required Docker/browser runtime is unavailable.
 
+
+<!-- End of Day 4 -->
