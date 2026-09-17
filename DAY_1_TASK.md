@@ -61,3 +61,5 @@ After verification, make these commits and push them:
 ## Definition of done
 
 The project launches with one Docker Compose command and has a frontend, backend API, MQTT broker, Redis cache, and PostgreSQL database running entirely locally. No physical hardware or cloud account is required.
+
+<!-- End of Day 1 -->
