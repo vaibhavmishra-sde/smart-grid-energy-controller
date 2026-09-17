@@ -56,3 +56,8 @@ The React/Vite frontend now provides an industrial operations center with live o
 Day 4 verification output is recorded in `DAY_4_VERIFICATION_OUTPUT.txt`. The automated validation tests pass locally; Docker throughput and a browser screenshot must be captured on a machine with Docker Desktop and a browser runtime.
 
 The telemetry writer limits Redis updates to the current sensor and grid per message; aggregate metrics are written once per second to prevent queue growth at high message rates.
+
+## Optimizations
+- Added Docker ignore files for smaller image contexts.
+- Explicitly set Node version to 22 via .nvmrc.
+- Configured services to restart unless-stopped in Compose.
