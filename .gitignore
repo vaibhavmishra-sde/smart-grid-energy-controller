@@ -22,3 +22,8 @@ htmlcov/
 .DS_Store
 Thumbs.db
 
+
+# Cache
+.npm/
+.eslintcache
+
