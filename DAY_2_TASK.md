@@ -96,3 +96,5 @@ Virtual Sensors → Mosquitto MQTT → Node.js Processor → Redis →
 ```
 
 The throughput panel and logs show measurements from the running system, not hard-coded or frontend-generated numbers. No commit or GitHub push is made as part of this task.
+
+<!-- End of Day 2 -->
