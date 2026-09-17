@@ -61,3 +61,6 @@ The telemetry writer limits Redis updates to the current sensor and grid per mes
 - Added Docker ignore files for smaller image contexts.
 - Explicitly set Node version to 22 via .nvmrc.
 - Configured services to restart unless-stopped in Compose.
+
+### Testing
+To run the test suite, use the 'npm test' command within the respective backend or frontend directories.
