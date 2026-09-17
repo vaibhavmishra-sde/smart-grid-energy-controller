@@ -8,3 +8,5 @@ COPY src ./src
 EXPOSE 5000
 CMD ["npm", "start"]
 
+
+# End of backend Dockerfile configuration
