@@ -27,3 +27,8 @@ Thumbs.db
 .npm/
 .eslintcache
 
+
+# IDEs
+.vscode/
+.idea/
+
