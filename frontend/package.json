@@ -7,7 +7,8 @@
                     "dev":  "vite --host 0.0.0.0",
                     "build":  "vite build",
                     "preview":  "vite preview --host 0.0.0.0",
-                    "format":  "prettier --write src/**/*.{js,jsx,css}"
+                    "format":  "prettier --write src/**/*.{js,jsx,css}",
+                    "lint":  "eslint src --ext js,jsx"
                 },
     "dependencies":  {
                          "@vitejs/plugin-react":  "^4.3.4",
