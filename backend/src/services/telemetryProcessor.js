@@ -301,3 +301,5 @@ export function startTelemetryProcessor() {
     mqttClient.removeListener('message', handleMessage);
   };
 }
+
+// Optimization: Consider using WebWorkers for off-main-thread processing if payload parsing becomes a bottleneck.
