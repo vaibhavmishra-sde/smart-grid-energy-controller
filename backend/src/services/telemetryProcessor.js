@@ -55,6 +55,10 @@ function setRedisState(sensor) {
   telemetry.redisUpdates += 1;
 }
 
+/**
+ * Aggregates sensor telemetry data into buckets.
+ * @param {Object} sensor - The sensor telemetry data
+ */
 function aggregate(sensor) {
   const bucketStart = Math.floor(Date.parse(sensor.timestamp) / config.aggregationFlushMs) * config.aggregationFlushMs;
   const key = `${sensor.sensorId}:${bucketStart}`;
