@@ -31,6 +31,12 @@ let flushInProgress = false;
 let offlineTimer;
 let lastRealtimeBroadcastAt = 0;
 
+/**
+ * Calculates the given percentile of an array of numbers.
+ * @param {number[]} values - The array of numbers.
+ * @param {number} percentileValue - The percentile to calculate (0-100).
+ * @returns {number} The calculated percentile value, or 0 if array is empty.
+ */
 function percentile(values, percentileValue) {
   if (!values.length) return 0;
   const sorted = [...values].sort((a, b) => a - b);
