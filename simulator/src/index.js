@@ -42,9 +42,14 @@ function buildSensors(count) {
   }
 }
 
-function bounded(value, minimum, maximum) {
-  return Math.max(minimum, Math.min(maximum, value));
-}
+/**
+ * Bounds a value between a minimum and maximum.
+ * @param {number} value - The value to bound
+ * @param {number} minimum - The minimum bound
+ * @param {number} maximum - The maximum bound
+ * @returns {number} The bounded value
+ */
+const bounded = (value, minimum, maximum) => Math.max(minimum, Math.min(maximum, value));
 
 function nextTelemetry(sensor) {
   const now = Date.now();
