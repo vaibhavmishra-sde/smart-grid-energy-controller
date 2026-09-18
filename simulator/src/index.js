@@ -84,6 +84,12 @@ function nextTelemetry(sensor) {
   };
 }
 
+/**
+ * Publishes an event to the MQTT broker.
+ * @param {mqtt.MqttClient} client - The MQTT client instance
+ * @param {string} type - The event type
+ * @param {Object} details - Additional event details
+ */
 function publishEvent(client, type, details = {}) {
   client.publish(eventTopic, JSON.stringify({ type, source: 'simulator', timestamp: new Date().toISOString(), ...details }), { qos: 0 });
 }
