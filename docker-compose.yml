@@ -57,7 +57,7 @@ services:
       DATABASE_URL: postgresql://smart_grid:change_me_local_only@postgres:5432/smart_grid
       SIMULATED_SENSORS: 1000
       TELEMETRY_INTERVAL_MS: 1000
-      AGGREGATION_FLUSH_MS: 5000
+      SIMULATOR_SCENARIO: normal
       ENABLE_AUTO_PROTECTION: "true"
       MAX_VOLTAGE: 250
       MIN_VOLTAGE: 210
