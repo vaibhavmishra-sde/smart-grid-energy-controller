@@ -8,6 +8,7 @@ const commandTopic = 'grid/system/simulation/command';
 const eventTopic = 'grid/system/events';
 const breakerCommandTopic = 'grid/+/+/+/breaker/+/command';
 const maxSensors = 10_000;
+const scenarios = new Set(['normal', 'high_demand', 'voltage_instability', 'sensor_failure', 'communication_failure']);
 
 let sensorCount = Math.min(maxSensors, Math.max(1, Number(process.env.SIMULATED_SENSORS ?? 1000)));
 let scenario = process.env.SIMULATOR_SCENARIO ?? 'normal';
@@ -111,7 +112,7 @@ function applyCommand(client, rawPayload) {
   const action = String(command.action ?? '').toLowerCase();
   if (action === 'start') running = true;
   if (action === 'stop') running = false;
-  if (action === 'scenario' && typeof command.scenario === 'string') scenario = command.scenario;
+  if (action === 'scenario' && scenarios.has(command.scenario)) scenario = command.scenario;
   if (action === 'preset' && Number.isFinite(Number(command.sensors))) {
     sensorCount = Math.min(maxSensors, Math.max(1, Number(command.sensors)));
     buildSensors(sensorCount);
