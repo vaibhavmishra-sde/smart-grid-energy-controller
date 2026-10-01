@@ -16,6 +16,10 @@ export function validTelemetry(value) {
 }
 
 export function validSimulationCommand(value) {
-  return value && typeof value === 'object'
-    && ['start', 'stop', 'preset', 'scenario'].includes(String(value.action ?? '').toLowerCase());
+  if (!value || typeof value !== 'object') return false;
+  const action = String(value.action ?? '').toLowerCase();
+  if (!['start', 'stop', 'preset', 'scenario'].includes(action)) return false;
+  if (action === 'preset') return Number.isInteger(value.sensors) && value.sensors > 0;
+  if (action === 'scenario') return nonEmptyString(value.scenario);
+  return true;
 }

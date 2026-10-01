@@ -24,4 +24,6 @@ test('accepts only supported simulation commands', () => {
   assert.equal(validSimulationCommand({ action: 'SCENARIO' }), true);
   assert.equal(validSimulationCommand({ action: 'delete-all' }), false);
   assert.equal(validSimulationCommand({}), false);
+  assert.equal(validSimulationCommand({ action: 'preset', sensors: 0 }), false);
+  assert.equal(validSimulationCommand({ action: 'scenario' }), false);
 });
