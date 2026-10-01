@@ -15,6 +15,8 @@ test('rejects malformed telemetry payloads', () => {
   assert.equal(validTelemetry({ ...sample, power: 'not-a-number' }), false);
   assert.equal(validTelemetry({ ...sample, timestamp: 'never' }), false);
   assert.equal(validTelemetry({ ...sample, sensorId: '   ' }), false);
+  assert.equal(validTelemetry({ ...sample, temperature: Number.NaN }), false);
+  assert.equal(validTelemetry({ ...sample, timestamp: 123 }), false);
 });
 
 test('accepts only supported simulation commands', () => {

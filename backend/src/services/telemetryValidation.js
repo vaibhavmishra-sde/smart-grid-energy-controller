@@ -2,19 +2,15 @@ function nonEmptyString(value) {
   return typeof value === 'string' && value.trim().length > 0;
 }
 
+const telemetryFields = ['voltage', 'current', 'power', 'frequency', 'powerFactor', 'energyConsumed', 'temperature'];
+
 export function validTelemetry(value) {
   return value && typeof value === 'object'
     && nonEmptyString(value.sensorId)
     && nonEmptyString(value.gridId)
     && nonEmptyString(value.substationId)
     && nonEmptyString(value.regionId)
-    && Number.isFinite(value.voltage)
-    && Number.isFinite(value.current)
-    && Number.isFinite(value.power)
-    && Number.isFinite(value.frequency)
-    && Number.isFinite(value.powerFactor)
-    && Number.isFinite(value.energyConsumed)
-    && Number.isFinite(value.temperature)
+    && telemetryFields.every((field) => Number.isFinite(value[field]))
     && typeof value.timestamp === 'string'
     && Number.isFinite(Date.parse(value.timestamp));
 }
