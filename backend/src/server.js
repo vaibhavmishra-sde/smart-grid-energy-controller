@@ -2,6 +2,7 @@ import cors from 'cors';
 import express from 'express';
 import helmet from 'helmet';
 import { createServer } from 'node:http';
+import crypto from 'node:crypto';
 import { config } from './config.js';
 import { closeDependencies, connectDependencies, database, dependencyState } from './services/dependencies.js';
 import { authenticate, authorize, login } from './services/auth.js';
