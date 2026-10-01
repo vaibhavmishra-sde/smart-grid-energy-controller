@@ -40,7 +40,7 @@ The simulator supports runtime commands on `grid/system/simulation/command`:
 ```
 
 
-it adds software-only virtual breakers, safety alerts, automatic protection, JWT role checks, audit logging, and live WebSocket events. Breaker commands use the MQTT round trip:
+The platform also includes software-only virtual breakers, safety alerts, automatic protection, JWT role checks, audit logging, and live WebSocket events. Breaker commands use the MQTT round trip:
 
 ```text
 REST command → MQTT command → virtual breaker → MQTT status → Redis/database → WebSocket
@@ -63,4 +63,7 @@ The telemetry writer limits Redis updates to the current sensor and grid per mes
 - Configured services to restart unless-stopped in Compose.
 
 ### Testing
-To run the test suite, use the 'npm test' command within the respective backend or frontend directories.
+
+Run the backend validation suite with `npm test` from `backend/`. Build the dashboard with
+`npm run build` from `frontend/`. The simulator can be started independently with `npm start`
+from `simulator/` when an MQTT broker is available.
