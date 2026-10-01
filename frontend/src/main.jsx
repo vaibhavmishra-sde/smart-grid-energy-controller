@@ -32,7 +32,7 @@ function Sparkline({ values, color = '#7fffc0' }) {
   if (!values.length) return <div className="chart-empty">Waiting for telemetry...</div>;
   const max = Math.max(...values, 1); const min = Math.min(...values, 0); const range = max - min || 1;
   const points = values.map((value, index) => `${(index / Math.max(values.length - 1, 1)) * 100},${100 - ((value - min) / range) * 88 - 6}`).join(' ');
-  return <svg className="sparkline" viewBox="0 0 100 100" preserveAspectRatio="none" role="img" aria-label="Power consumption trend"><polyline points={points} fill="none" stroke={color} strokeWidth="2" vectorEffect="non-scaling-stroke" /></svg>;
+  return <svg className="sparkline" viewBox="0 0 100 100" preserveAspectRatio="none" role="img" aria-label="Power consumption trend"><title>Power consumption trend</title><polyline points={points} fill="none" stroke={color} strokeWidth="2" vectorEffect="non-scaling-stroke" /></svg>;
 }
 
 function MetricCard({ label, value, unit, tone = 'normal', detail }) {
