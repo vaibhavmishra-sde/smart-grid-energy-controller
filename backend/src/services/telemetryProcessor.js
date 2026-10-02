@@ -244,12 +244,19 @@ function publishMetrics() {
 }
 
 export function getMetrics() {
+  const onlineCutoff = Date.now() - SENSOR_TTL_SECONDS * 1000;
+  let onlineSensors = 0;
+  let offlineSensors = 0;
+  for (const sensor of latestBySensor.values()) {
+    if (Date.parse(sensor.timestamp) >= onlineCutoff) onlineSensors += 1;
+    else offlineSensors += 1;
+  }
   return {
     ...telemetry,
     totalPower: [...gridPower.values()].reduce((sum, power) => sum + power, 0),
     activeSensors: latestBySensor.size,
-    onlineSensors: [...latestBySensor.values()].filter((sensor) => Date.now() - Date.parse(sensor.timestamp) < SENSOR_TTL_SECONDS * 1000).length,
-    offlineSensors: [...latestBySensor.values()].filter((sensor) => Date.now() - Date.parse(sensor.timestamp) >= SENSOR_TTL_SECONDS * 1000).length,
+    onlineSensors,
+    offlineSensors,
     pendingAggregates: aggregateBuckets.size,
     gridCount: gridPower.size,
   };
