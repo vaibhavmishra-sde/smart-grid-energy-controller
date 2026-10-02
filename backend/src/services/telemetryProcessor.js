@@ -30,6 +30,7 @@ const latencyWindow = [];
 let flushInProgress = false;
 let offlineTimer;
 let lastRealtimeBroadcastAt = 0;
+const MAX_DATABASE_ROWS_PER_BATCH = 7000;
 
 /**
  * Calculates the given percentile of an array of numbers.
@@ -197,29 +198,24 @@ async function flushAggregates() {
   flushInProgress = true;
   const rows = [...aggregateBuckets.values()];
   try {
-    const placeholders = [];
-    const values = [];
-    rows.forEach((row, index) => {
-      const offset = index * 8;
-      placeholders.push(`($${offset + 1}, $${offset + 2}, $${offset + 3}, $${offset + 4}, $${offset + 5}, $${offset + 6}, $${offset + 7}, $${offset + 8})`);
-      values.push(
-        row.sensorId,
-        row.bucketStart,
-        row.sumVoltage / row.sampleCount,
-        row.sumCurrent / row.sampleCount,
-        row.sumPower / row.sampleCount,
-        row.sumFrequency / row.sampleCount,
-        row.sumTemperature / row.sampleCount,
-        row.sampleCount,
-      );
-    });
     await database.query('BEGIN');
-    await database.query(
-      `INSERT INTO telemetry_aggregates
-       (sensor_id, bucket_start, average_voltage, average_current, average_power, average_frequency, average_temperature, sample_count)
-       VALUES ${placeholders.join(', ')}`,
-      values,
-    );
+    for (let start = 0; start < rows.length; start += MAX_DATABASE_ROWS_PER_BATCH) {
+      const chunk = rows.slice(start, start + MAX_DATABASE_ROWS_PER_BATCH);
+      const placeholders = [];
+      const values = [];
+      chunk.forEach((row, index) => {
+        const offset = index * 8;
+        placeholders.push(`($${offset + 1}, $${offset + 2}, $${offset + 3}, $${offset + 4}, $${offset + 5}, $${offset + 6}, $${offset + 7}, $${offset + 8})`);
+        values.push(row.sensorId, row.bucketStart, row.sumVoltage / row.sampleCount, row.sumCurrent / row.sampleCount,
+          row.sumPower / row.sampleCount, row.sumFrequency / row.sampleCount, row.sumTemperature / row.sampleCount, row.sampleCount);
+      });
+      await database.query(
+        `INSERT INTO telemetry_aggregates
+         (sensor_id, bucket_start, average_voltage, average_current, average_power, average_frequency, average_temperature, sample_count)
+         VALUES ${placeholders.join(', ')}`,
+        values,
+      );
+    }
     await database.query('COMMIT');
     for (const row of rows) aggregateBuckets.delete(`${row.sensorId}:${row.bucketStart.getTime()}`);
     telemetry.databaseWrites += 1;
@@ -297,9 +293,10 @@ export function startTelemetryProcessor() {
     else console.log(`Subscribed to ${TELEMETRY_TOPIC}`);
   });
   mqttClient.on('connect', subscribe);
-  mqttClient.on('message', (topic, payload) => {
+  const onMessage = (topic, payload) => {
     if (topic.endsWith('/telemetry')) handleMessage(topic, payload);
-  });
+  };
+  mqttClient.on('message', onMessage);
   const metricsTimer = setInterval(publishMetrics, 1000);
   const flushTimer = setInterval(flushAggregates, config.aggregationFlushMs);
   offlineTimer = setInterval(checkOfflineSensors, Math.max(1000, Math.floor(config.heartbeatTimeoutMs / 3)));
@@ -308,7 +305,7 @@ export function startTelemetryProcessor() {
     clearInterval(flushTimer);
     clearInterval(offlineTimer);
     mqttClient.off('connect', subscribe);
-    mqttClient.removeListener('message', handleMessage);
+    mqttClient.removeListener('message', onMessage);
   };
 }
 
