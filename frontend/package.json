@@ -6,6 +6,7 @@
     "scripts":  {
                     "dev":  "vite --host 0.0.0.0",
                     "build":  "vite build",
+                    "verify": "npm run build",
                     "preview":  "vite preview --host 0.0.0.0",
                     "format":  "prettier --write src/**/*.{js,jsx,css}",
                     "lint":  "eslint src --ext js,jsx"
