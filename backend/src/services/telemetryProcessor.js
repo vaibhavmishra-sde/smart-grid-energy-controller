@@ -3,6 +3,7 @@ import { database, mqttClient, redis } from './dependencies.js';
 import { autoTripForGrid } from './breakers.js';
 import { broadcast } from './realtime.js';
 import { validTelemetry } from './telemetryValidation.js';
+import { buildAggregateInsert } from './aggregateQuery.js';
 
 const TELEMETRY_TOPIC = 'grid/+/+/+/sensor/+/telemetry';
 const SENSOR_TTL_SECONDS = 120;
@@ -201,20 +202,8 @@ async function flushAggregates() {
     await database.query('BEGIN');
     for (let start = 0; start < rows.length; start += MAX_DATABASE_ROWS_PER_BATCH) {
       const chunk = rows.slice(start, start + MAX_DATABASE_ROWS_PER_BATCH);
-      const placeholders = [];
-      const values = [];
-      chunk.forEach((row, index) => {
-        const offset = index * 8;
-        placeholders.push(`($${offset + 1}, $${offset + 2}, $${offset + 3}, $${offset + 4}, $${offset + 5}, $${offset + 6}, $${offset + 7}, $${offset + 8})`);
-        values.push(row.sensorId, row.bucketStart, row.sumVoltage / row.sampleCount, row.sumCurrent / row.sampleCount,
-          row.sumPower / row.sampleCount, row.sumFrequency / row.sampleCount, row.sumTemperature / row.sampleCount, row.sampleCount);
-      });
-      await database.query(
-        `INSERT INTO telemetry_aggregates
-         (sensor_id, bucket_start, average_voltage, average_current, average_power, average_frequency, average_temperature, sample_count)
-         VALUES ${placeholders.join(', ')}`,
-        values,
-      );
+      const query = buildAggregateInsert(chunk);
+      await database.query(query.text, query.values);
     }
     await database.query('COMMIT');
     for (const row of rows) aggregateBuckets.delete(`${row.sensorId}:${row.bucketStart.getTime()}`);
