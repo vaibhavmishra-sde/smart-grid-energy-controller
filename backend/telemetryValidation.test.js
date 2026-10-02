@@ -11,6 +11,11 @@ const sample = {
 
 
 test('accepts a complete telemetry payload', () => assert.equal(validTelemetry(sample), true));
+test('accepts documented telemetry boundaries', () => {
+  assert.equal(validTelemetry({ ...sample, voltage: 0, current: 100000, power: 100000000, frequency: 40, powerFactor: 0, energyConsumed: 0, temperature: -100 }), true);
+  assert.equal(validTelemetry({ ...sample, voltage: 1000, frequency: 70, powerFactor: 1, temperature: 250 }), true);
+});
+
 test('rejects malformed telemetry payloads', () => {
   assert.equal(validTelemetry({ ...sample, power: 'not-a-number' }), false);
   assert.equal(validTelemetry({ ...sample, timestamp: 'never' }), false);
@@ -21,6 +26,9 @@ test('rejects malformed telemetry payloads', () => {
   assert.equal(validTelemetry({ ...sample, voltage: -1 }), false);
   assert.equal(validTelemetry({ ...sample, sensorId: 'sensor/with/slash' }), false);
   assert.equal(validTelemetry({ ...sample, sensorId: 'x'.repeat(129) }), false);
+  assert.equal(validTelemetry({ ...sample, current: 100001 }), false);
+  assert.equal(validTelemetry({ ...sample, frequency: 39.99 }), false);
+  assert.equal(validTelemetry({ ...sample, energyConsumed: -0.1 }), false);
 });
 
 test('accepts only supported simulation commands', () => {
@@ -30,4 +38,7 @@ test('accepts only supported simulation commands', () => {
   assert.equal(validSimulationCommand({}), false);
   assert.equal(validSimulationCommand({ action: 'preset', sensors: 0 }), false);
   assert.equal(validSimulationCommand({ action: 'scenario' }), false);
+  assert.equal(validSimulationCommand({ action: 'preset', sensors: 1.5 }), false);
+  assert.equal(validSimulationCommand({ action: 'scenario', scenario: '   ' }), false);
+  assert.equal(validSimulationCommand({ action: 'start', sensors: 1000 }), true);
 });
