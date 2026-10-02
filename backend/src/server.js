@@ -9,6 +9,7 @@ import { authenticate, authorize, login } from './services/auth.js';
 import { getBreaker, getBreakers, requestBreakerCommand, startBreakerService } from './services/breakers.js';
 import { getAlerts, getGridSnapshot, getLatestSensor, getMetrics, getSensors, sendSimulationCommand, startTelemetryProcessor, updateAlert } from './services/telemetryProcessor.js';
 import { closeWebSocket, initWebSocket } from './services/realtime.js';
+import { parsePagination } from './services/pagination.js';
 
 const app = express();
 app.use(helmet());
@@ -101,11 +102,9 @@ app.get('/api/sensors/:id', (request, response) => {
 });
 
 app.get('/api/sensors', (request, response) => {
-  const requestedLimit = Number(request.query.limit ?? 100);
-  if (!Number.isInteger(requestedLimit) || requestedLimit < 1 || requestedLimit > config.apiMaxSensorLimit) {
-    return response.status(400).json({ error: `limit must be an integer between 1 and ${config.apiMaxSensorLimit}` });
-  }
-  return response.json(getSensors().slice(0, requestedLimit));
+  const pagination = parsePagination(request.query, config.apiMaxSensorLimit);
+  if (pagination.error) return response.status(400).json({ error: pagination.error });
+  return response.json(getSensors().slice(pagination.offset, pagination.offset + pagination.limit));
 });
 
 app.get('/api/grids/:id', (request, response) => {
