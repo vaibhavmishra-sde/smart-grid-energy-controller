@@ -1,14 +1,9 @@
 import 'dotenv/config';
+import { positiveNumber } from './configValidation.js';
 
 function required(name, fallback) {
   const value = process.env[name] ?? fallback;
   if (!value) throw new Error(`Missing required environment variable: ${name}`);
-  return value;
-}
-
-function positiveNumber(name, fallback) {
-  const value = Number(process.env[name] ?? fallback);
-  if (!Number.isFinite(value) || value <= 0) throw new Error(`${name} must be a positive number`);
   return value;
 }
 
