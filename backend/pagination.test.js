@@ -14,10 +14,12 @@ test('rejects invalid limits', () => {
   assert.match(parsePagination({ limit: '0' }, 1000).error, /limit/);
   assert.match(parsePagination({ limit: '1001' }, 1000).error, /limit/);
   assert.match(parsePagination({ limit: 'many' }, 1000).error, /limit/);
+  assert.match(parsePagination({ limit: '10.5' }, 1000).error, /limit/);
 });
 
 test('rejects invalid offsets', () => {
   assert.match(parsePagination({ offset: '-1' }, 1000).error, /offset/);
   assert.match(parsePagination({ offset: '1000001' }, 1000).error, /offset/);
   assert.match(parsePagination({ offset: 'many' }, 1000).error, /offset/);
+  assert.match(parsePagination({ offset: '2.5' }, 1000).error, /offset/);
 });
