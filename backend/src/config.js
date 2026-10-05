@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { positiveNumber } from './configValidation.js';
+import { positiveInteger, positiveNumber } from './configValidation.js';
 
 function required(name, fallback) {
   const value = process.env[name] ?? fallback;
@@ -14,8 +14,8 @@ export const config = Object.freeze({
   redisHost: required('REDIS_HOST', 'localhost'),
   redisPort: positiveNumber('REDIS_PORT', 6379),
   databaseUrl: required('DATABASE_URL', 'postgresql://smart_grid:change_me_local_only@localhost:5432/smart_grid'),
-  simulatedSensors: positiveNumber('SIMULATED_SENSORS', 1000),
-  apiMaxSensorLimit: positiveNumber('API_MAX_SENSOR_LIMIT', 1000),
+  simulatedSensors: positiveInteger('SIMULATED_SENSORS', 1000),
+  apiMaxSensorLimit: positiveInteger('API_MAX_SENSOR_LIMIT', 1000),
   telemetryIntervalMs: positiveNumber('TELEMETRY_INTERVAL_MS', 1000),
   aggregationFlushMs: positiveNumber('AGGREGATION_FLUSH_MS', 5000),
   maxVoltage: positiveNumber('MAX_VOLTAGE', 250),
