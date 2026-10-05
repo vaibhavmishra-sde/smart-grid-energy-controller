@@ -4,6 +4,7 @@ import { autoTripForGrid } from './breakers.js';
 import { broadcast } from './realtime.js';
 import { validTelemetry } from './telemetryValidation.js';
 import { buildAggregateInsert } from './aggregateQuery.js';
+import { percentile } from './statistics.js';
 
 const TELEMETRY_TOPIC = 'grid/+/+/+/sensor/+/telemetry';
 const SENSOR_TTL_SECONDS = 120;
@@ -32,18 +33,6 @@ let flushInProgress = false;
 let offlineTimer;
 let lastRealtimeBroadcastAt = 0;
 const MAX_DATABASE_ROWS_PER_BATCH = 7000;
-
-/**
- * Calculates the given percentile of an array of numbers.
- * @param {number[]} values - The array of numbers.
- * @param {number} percentileValue - The percentile to calculate (0-100).
- * @returns {number} The calculated percentile value, or 0 if array is empty.
- */
-function percentile(values, percentileValue) {
-  if (!values.length) return 0;
-  const sorted = [...values].sort((a, b) => a - b);
-  return sorted[Math.min(sorted.length - 1, Math.ceil((percentileValue / 100) * sorted.length) - 1)];
-}
 
 function setRedisState(sensor) {
   if (!redis.isReady) return;
