@@ -1,6 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { positiveNumber } from './src/configValidation.js';
+import { positiveInteger, positiveNumber } from './src/configValidation.js';
+
+test('accepts only positive safe integers', () => {
+  assert.equal(positiveInteger('SIMULATED_SENSORS', 1000), 1000);
+  assert.throws(() => positiveInteger('SIMULATED_SENSORS', 1.5));
+  assert.throws(() => positiveInteger('SIMULATED_SENSORS', 0));
+});
 
 test('accepts a positive configured value', () => {
   assert.equal(positiveNumber('PORT', 5000), 5000);
