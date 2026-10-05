@@ -67,3 +67,5 @@ The telemetry writer limits Redis updates to the current sensor and grid per mes
 Run the backend validation suite with `npm test` from `backend/`. Build the dashboard with
 `npm run build` from `frontend/`. The simulator can be started independently with `npm start`
 from `simulator/` when an MQTT broker is available.
+
+On Windows PowerShell systems that block `npm.ps1`, use `npm.cmd test` and `npm.cmd run build`.
