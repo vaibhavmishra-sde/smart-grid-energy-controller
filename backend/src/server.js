@@ -102,6 +102,7 @@ app.get('/api/sensors/:id', (request, response) => {
 });
 
 app.get('/api/sensors', (request, response) => {
+  response.set('Cache-Control', 'no-store');
   const pagination = parsePagination(request.query, config.apiMaxSensorLimit);
   if (pagination.error) return response.status(400).json({ error: pagination.error });
   return response.json(getSensors().slice(pagination.offset, pagination.offset + pagination.limit));
