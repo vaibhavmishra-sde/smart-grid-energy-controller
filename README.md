@@ -13,6 +13,8 @@ docker compose up --build
 - API health: `http://localhost:5000/health`
 - System status: `http://localhost:5000/api/system/status`
 
+When running the frontend outside Docker, copy `frontend/.env.example` to `frontend/.env` to configure the backend origin.
+
 The simulator runs as one event-driven Node.js process and publishes realistic readings at:
 
 ```text
