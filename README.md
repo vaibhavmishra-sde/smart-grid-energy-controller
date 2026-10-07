@@ -11,6 +11,7 @@ docker compose up --build
 
 - Dashboard: `http://localhost:5173`
 - API health: `http://localhost:5000/health`
+- API readiness: `http://localhost:5000/ready` (returns 503 until MQTT, Redis, and PostgreSQL are connected)
 - System status: `http://localhost:5000/api/system/status`
 
 When running the frontend outside Docker, copy `frontend/.env.example` to `frontend/.env` to configure the backend origin.
@@ -58,6 +59,13 @@ The React/Vite frontend now provides an industrial operations center with live o
 Day 4 verification output is recorded in `DAY_4_VERIFICATION_OUTPUT.txt`. The automated validation tests pass locally; Docker throughput and a browser screenshot must be captured on a machine with Docker Desktop and a browser runtime.
 
 The telemetry writer limits Redis updates to the current sensor and grid per message; aggregate metrics are written once per second to prevent queue growth at high message rates.
+
+## Production-minded defaults
+
+- CORS is restricted to `CORS_ORIGINS` instead of accepting every website.
+- The API returns a request ID, applies a lightweight per-IP request limit, and can emit JSON request logs with `REQUEST_LOG=true`.
+- Use strong values for `JWT_SECRET` and all demo passwords before exposing the stack outside a local network.
+- `/health` checks process liveness; `/ready` checks dependency readiness and is used by Docker health checks.
 
 ## Optimizations
 - Added Docker ignore files for smaller image contexts.

@@ -9,3 +9,8 @@ export function positiveInteger(name, fallback) {
   if (!Number.isSafeInteger(value) || value <= 0) throw new Error(`${name} must be a positive integer`);
   return value;
 }
+
+export function csvValues(name, fallback = '') {
+  const value = String(process.env[name] ?? fallback).trim();
+  return value ? value.split(',').map((item) => item.trim()).filter(Boolean) : [];
+}

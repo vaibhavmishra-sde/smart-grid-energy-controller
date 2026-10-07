@@ -13,15 +13,28 @@ import { parsePagination } from './services/pagination.js';
 
 const app = express();
 app.use(helmet());
-app.use(cors());
+app.use(cors({ origin: (origin, callback) => callback(null, !origin || config.corsOrigins.includes(origin)) }));
 app.use(express.json({ limit: '100kb' }));
+const requestCounts = new Map();
+const RATE_WINDOW_MS = 60_000;
+const RATE_LIMIT = 120;
 app.use((request, response, next) => {
   const suppliedRequestId = request.headers['x-request-id'];
   const requestId = typeof suppliedRequestId === 'string' ? suppliedRequestId.slice(0, 128) : crypto.randomUUID();
   request.requestId = requestId;
   response.setHeader('X-Request-Id', requestId);
+  response.setHeader('X-Content-Type-Options', 'nosniff');
+  const key = request.ip;
+  const current = requestCounts.get(key) ?? { started: Date.now(), count: 0 };
+  if (Date.now() - current.started >= RATE_WINDOW_MS) { current.started = Date.now(); current.count = 0; }
+  current.count += 1;
+  requestCounts.set(key, current);
+  if (current.count > RATE_LIMIT) return response.status(429).json({ error: 'Too many requests', requestId });
+  const startedAt = Date.now();
+  response.on('finish', () => { if (config.requestLog) console.info(JSON.stringify({ requestId, method: request.method, path: request.originalUrl, status: response.statusCode, durationMs: Date.now() - startedAt })); });
   next();
 });
+setInterval(() => { const cutoff = Date.now() - RATE_WINDOW_MS; for (const [key, value] of requestCounts) if (value.started < cutoff) requestCounts.delete(key); }, RATE_WINDOW_MS).unref();
 
 app.post('/api/auth/login', (request, response) => {
   const result = login(request.body?.username, request.body?.password);
@@ -106,6 +119,11 @@ app.get('/api/sensors', (request, response) => {
   const pagination = parsePagination(request.query, config.apiMaxSensorLimit);
   if (pagination.error) return response.status(400).json({ error: pagination.error });
   return response.json(getSensors().slice(pagination.offset, pagination.offset + pagination.limit));
+});
+
+app.get('/ready', (_request, response) => {
+  const ready = Object.values(dependencyState).every((state) => state === 'CONNECTED');
+  response.status(ready ? 200 : 503).json({ status: ready ? 'ready' : 'not_ready', dependencies: dependencyState });
 });
 
 app.get('/api/grids/:id', (request, response) => {

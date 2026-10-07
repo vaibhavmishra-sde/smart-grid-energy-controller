@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { positiveInteger, positiveNumber } from './configValidation.js';
+import { csvValues, positiveInteger, positiveNumber } from './configValidation.js';
 
 function required(name, fallback) {
   const value = process.env[name] ?? fallback;
@@ -27,4 +27,6 @@ export const config = Object.freeze({
   adminPassword: process.env.ADMIN_PASSWORD ?? 'admin_change_me',
   operatorPassword: process.env.OPERATOR_PASSWORD ?? 'operator_change_me',
   viewerPassword: process.env.VIEWER_PASSWORD ?? 'viewer_change_me',
+  corsOrigins: csvValues('CORS_ORIGINS', 'http://localhost:5173'),
+  requestLog: String(process.env.REQUEST_LOG ?? 'false').toLowerCase() === 'true',
 });

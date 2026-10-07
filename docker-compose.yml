@@ -67,11 +67,13 @@ services:
       OPERATOR_PASSWORD: operator_change_me
       VIEWER_PASSWORD: viewer_change_me
       HEARTBEAT_TIMEOUT_MS: 15000
+      CORS_ORIGINS: http://localhost:5173
+      REQUEST_LOG: "false"
     restart: unless-stopped
     ports:
       - "5000:5000"
     healthcheck:
-      test: ["CMD-SHELL", "wget --spider -q http://localhost:5000/health || exit 1"]
+      test: ["CMD-SHELL", "wget --spider -q http://localhost:5000/ready || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5

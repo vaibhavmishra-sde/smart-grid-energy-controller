@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { positiveInteger, positiveNumber } from './src/configValidation.js';
+import { csvValues, positiveInteger, positiveNumber } from './src/configValidation.js';
 
 test('accepts only positive safe integers', () => {
   assert.equal(positiveInteger('SIMULATED_SENSORS', 1000), 1000);
@@ -23,4 +23,10 @@ test('rejects invalid safety thresholds', () => {
   assert.throws(() => positiveNumber('MAX_VOLTAGE', 0));
   assert.throws(() => positiveNumber('MIN_VOLTAGE', Number.NaN));
   assert.throws(() => positiveNumber('MAX_POWER', -500));
+});
+
+test('parses comma-separated configuration values', () => {
+  process.env.TEST_ORIGINS = ' http://localhost:5173, https://example.test ';
+  assert.deepEqual(csvValues('TEST_ORIGINS'), ['http://localhost:5173', 'https://example.test']);
+  delete process.env.TEST_ORIGINS;
 });
