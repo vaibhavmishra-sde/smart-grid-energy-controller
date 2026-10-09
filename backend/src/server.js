@@ -15,6 +15,7 @@ const app = express();
 app.use(helmet());
 app.use(cors({ origin: (origin, callback) => callback(null, !origin || config.corsOrigins.includes(origin)) }));
 app.use(express.json({ limit: '100kb' }));
+app.use('/api', (_request, response, next) => { response.setHeader('Cache-Control', 'no-store'); next(); });
 const requestCounts = new Map();
 const RATE_WINDOW_MS = 60_000;
 const RATE_LIMIT = 120;
@@ -34,7 +35,7 @@ app.use((request, response, next) => {
     const oldestKey = requestCounts.keys().next().value;
     requestCounts.delete(oldestKey);
   }
-  if (current.count > RATE_LIMIT) return response.status(429).json({ error: 'Too many requests', requestId });
+  if (current.count > RATE_LIMIT) { response.setHeader('Retry-After', Math.ceil((RATE_WINDOW_MS - (Date.now() - current.started)) / 1000)); return response.status(429).json({ error: 'Too many requests', requestId }); }
   const startedAt = Date.now();
   response.on('finish', () => { if (config.requestLog) console.info(JSON.stringify({ requestId, method: request.method, path: request.originalUrl, status: response.statusCode, durationMs: Date.now() - startedAt })); });
   next();
