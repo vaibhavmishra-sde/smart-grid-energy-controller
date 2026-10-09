@@ -18,6 +18,7 @@ app.use(express.json({ limit: '100kb' }));
 const requestCounts = new Map();
 const RATE_WINDOW_MS = 60_000;
 const RATE_LIMIT = 120;
+const MAX_TRACKED_CLIENTS = 10_000;
 app.use((request, response, next) => {
   const suppliedRequestId = request.headers['x-request-id'];
   const requestId = typeof suppliedRequestId === 'string' ? suppliedRequestId.slice(0, 128) : crypto.randomUUID();
@@ -29,6 +30,10 @@ app.use((request, response, next) => {
   if (Date.now() - current.started >= RATE_WINDOW_MS) { current.started = Date.now(); current.count = 0; }
   current.count += 1;
   requestCounts.set(key, current);
+  if (requestCounts.size > MAX_TRACKED_CLIENTS) {
+    const oldestKey = requestCounts.keys().next().value;
+    requestCounts.delete(oldestKey);
+  }
   if (current.count > RATE_LIMIT) return response.status(429).json({ error: 'Too many requests', requestId });
   const startedAt = Date.now();
   response.on('finish', () => { if (config.requestLog) console.info(JSON.stringify({ requestId, method: request.method, path: request.originalUrl, status: response.statusCode, durationMs: Date.now() - startedAt })); });
