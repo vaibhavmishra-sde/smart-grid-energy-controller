@@ -1,11 +1,16 @@
 import 'dotenv/config';
-import { csvValues, positiveInteger, positiveNumber } from './configValidation.js';
+import { csvValues, positiveInteger, positiveNumber, validateRange } from './configValidation.js';
 
 function required(name, fallback) {
   const value = process.env[name] ?? fallback;
   if (!value) throw new Error(`Missing required environment variable: ${name}`);
   return value;
 }
+
+const maxVoltage = positiveNumber('MAX_VOLTAGE', 250);
+const minVoltage = positiveNumber('MIN_VOLTAGE', 210);
+const maxPower = positiveNumber('MAX_POWER', 5000);
+validateRange('Voltage', minVoltage, maxVoltage);
 
 export const config = Object.freeze({
   port: positiveNumber('PORT', 5000),
@@ -18,9 +23,9 @@ export const config = Object.freeze({
   apiMaxSensorLimit: positiveInteger('API_MAX_SENSOR_LIMIT', 1000),
   telemetryIntervalMs: positiveNumber('TELEMETRY_INTERVAL_MS', 1000),
   aggregationFlushMs: positiveNumber('AGGREGATION_FLUSH_MS', 5000),
-  maxVoltage: positiveNumber('MAX_VOLTAGE', 250),
-  minVoltage: positiveNumber('MIN_VOLTAGE', 210),
-  maxPower: positiveNumber('MAX_POWER', 5000),
+  maxVoltage,
+  minVoltage,
+  maxPower,
   enableAutoProtection: String(process.env.ENABLE_AUTO_PROTECTION ?? 'true').toLowerCase() === 'true',
   heartbeatTimeoutMs: positiveNumber('HEARTBEAT_TIMEOUT_MS', 15_000),
   jwtSecret: required('JWT_SECRET', 'change_me_before_production'),

@@ -14,3 +14,8 @@ export function csvValues(name, fallback = '') {
   const value = String(process.env[name] ?? fallback).trim();
   return value ? value.split(',').map((item) => item.trim()).filter(Boolean) : [];
 }
+
+export function validateRange(name, minimum, maximum) {
+  if (minimum >= maximum) throw new Error(`${name} minimum must be less than maximum`);
+  return true;
+}
