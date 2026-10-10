@@ -14,7 +14,7 @@ docker compose up --build
 - API readiness: `http://localhost:5000/ready` (returns 503 until MQTT, Redis, and PostgreSQL are connected)
 - System status: `http://localhost:5000/api/system/status`
 
-When running the frontend outside Docker, copy `frontend/.env.example` to `frontend/.env` to configure the backend origin.
+When running the frontend outside Docker, copy `frontend/.env.example` to `frontend/.env` to configure the backend origin. When running the full stack with Docker Compose, copy the root `.env.example` to `.env` first and update the credentials.
 
 The simulator runs as one event-driven Node.js process and publishes realistic readings at:
 
