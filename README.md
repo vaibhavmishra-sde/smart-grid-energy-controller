@@ -1,5 +1,7 @@
 # Smart Grid Energy Controller
 
+[![CI](https://github.com/vaibhavmishra-sde/smart-grid-energy-controller/actions/workflows/ci.yml/badge.svg)](https://github.com/vaibhavmishra-sde/smart-grid-energy-controller/actions/workflows/ci.yml)
+
 A software-only industrial IoT platform that simulates energy sensors and virtual breakers. No physical hardware or cloud account is required.
 
 
