@@ -24,3 +24,10 @@ Copy `.env.example` to `.env` for Docker Compose development. Never commit `.env
 
 For end-to-end checks, start the stack with `docker compose up --build` and verify
 `/health`, `/api/system/status`, and the dashboard before opening a pull request.
+
+## Pull request checklist
+
+- [ ] Keep the change focused and describe the user-visible impact.
+- [ ] Run the backend tests and frontend build when those areas are affected.
+- [ ] Update documentation or configuration examples when behavior changes.
+- [ ] Confirm that secrets, `.env` files, and generated build output are not included.
