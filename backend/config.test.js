@@ -13,6 +13,16 @@ test('accepts a positive configured value', () => {
   assert.equal(positiveNumber('PORT', 42), 42);
 });
 
+test('rejects malformed numeric configuration values', () => {
+  process.env.PORT = 'not-a-number';
+  assert.throws(() => positiveNumber('PORT', 5000));
+  delete process.env.PORT;
+
+  process.env.SIMULATED_SENSORS = '2.5';
+  assert.throws(() => positiveInteger('SIMULATED_SENSORS', 1000));
+  delete process.env.SIMULATED_SENSORS;
+});
+
 test('rejects non-positive timing values', () => {
   assert.throws(() => positiveNumber('TELEMETRY_INTERVAL_MS', 0));
   assert.throws(() => positiveNumber('AGGREGATION_FLUSH_MS', -1));
@@ -28,6 +38,15 @@ test('rejects invalid safety thresholds', () => {
 test('parses comma-separated configuration values', () => {
   process.env.TEST_ORIGINS = ' http://localhost:5173, https://example.test ';
   assert.deepEqual(csvValues('TEST_ORIGINS'), ['http://localhost:5173', 'https://example.test']);
+  delete process.env.TEST_ORIGINS;
+});
+
+test('returns an empty list for missing or blank CSV configuration', () => {
+  delete process.env.TEST_ORIGINS;
+  assert.deepEqual(csvValues('TEST_ORIGINS'), []);
+
+  process.env.TEST_ORIGINS = '  ,  ';
+  assert.deepEqual(csvValues('TEST_ORIGINS'), []);
   delete process.env.TEST_ORIGINS;
 });
 
