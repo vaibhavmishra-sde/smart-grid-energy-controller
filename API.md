@@ -11,6 +11,7 @@ Protected operations require a bearer token from `POST /api/auth/login`:
 - `POST /api/simulation/start` and `/api/simulation/stop` control the simulator.
 
 Every response includes `X-Request-Id`; clients may provide one to correlate logs.
+
 # API reference
 
 All JSON endpoints are served by the backend at `http://localhost:5000`.
