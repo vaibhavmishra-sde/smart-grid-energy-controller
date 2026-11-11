@@ -12,7 +12,6 @@ const row = {
   sumTemperature: 64,
   sampleCount: 2,
 };
-
 test('builds averaged aggregate values in column order', () => {
   const query = buildAggregateInsert([row]);
 
