@@ -24,7 +24,6 @@ test('builds averaged aggregate values in column order', () => {
 
 test('increments placeholders for each aggregate row', () => {
   const query = buildAggregateInsert([row, { ...row, sensorId: 'SENSOR-02' }]);
-
   assert.match(query.text, /\(\$1, \$2, \$3, \$4, \$5, \$6, \$7, \$8\), \(\$9, \$10, \$11, \$12, \$13, \$14, \$15, \$16\)/);
   assert.equal(query.values.length, 16);
   assert.equal(query.values[8], 'SENSOR-02');
