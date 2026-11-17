@@ -3,7 +3,6 @@
 ## Development checks
 
 Before opening a pull request, run the checks for the areas you changed:
-
 ```bash
 cd backend && npm test
 cd ../frontend && npm run build
