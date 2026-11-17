@@ -11,7 +11,6 @@ cd ../frontend && npm run build
 Keep commits focused on one logical improvement. Use a short imperative subject, such as `Validate voltage safety range`, and include documentation updates when configuration or API behavior changes.
 
 ## Local configuration
-
 Copy `.env.example` to `.env` for Docker Compose development. Never commit `.env`, credentials, or generated build output.
 
 ## Development checks
