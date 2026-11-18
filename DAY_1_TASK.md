@@ -1,7 +1,5 @@
 # Day 1 — Smart Grid Controller Foundation
 
-
-
 ## Goal
 
 Create a runnable local foundation for the software-only Smart Grid Energy Controller. By the end of the day, the complete Docker stack starts locally and the API confirms that its dependencies are reachable.
